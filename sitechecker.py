@@ -2,6 +2,7 @@
 # Copyright 2014 Andrew Chang
 # Licensed under the Apache License, Version 2.0
 # http://www.apache.org/licenses/LICENSE-2.0
+"""Downloads a url, compares against saved page history, emails admin if a change detected."""
 
 import sys
 from urllib import request
@@ -13,16 +14,17 @@ from filecmp import FileCmp
 
 #set up logger
 #TODO: I don't like this here...
-logger = logging.getLogger('sitechecker')
+logger = logging.getLogger('sitechecker') # pylint: disable=C0103
 logger.setLevel(logging.DEBUG)
 # create file handler which logs even debug messages
-fh = logging.FileHandler(os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe()))) + '\\sitechecker.log')
+modpath = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe()))) # pylint: disable=C0103
+fh = logging.FileHandler(modpath + '\\sitechecker.log') # pylint: disable=C0103
 fh.setLevel(logging.DEBUG)
 # create console handler with a higher log level
-ch = logging.StreamHandler()
+ch = logging.StreamHandler() # pylint: disable=C0103
 ch.setLevel(logging.DEBUG)
 # create formatter and add it to the handlers
-formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s') # pylint: disable=C0103
 fh.setFormatter(formatter)
 ch.setFormatter(formatter)
 # add the handlers to the logger
@@ -30,10 +32,12 @@ logger.addHandler(fh)
 logger.addHandler(ch)
 
 class SiteChecker:
+    """Downloads a url, compares against saved, emails admin if a change detected."""
     tmpfilename = "tmp"
 
     @staticmethod
     def print_and_rename(src, dst):
+        """print to output before renaming"""
         logger.debug("renaming " + src + " to " + dst)
         os.rename(src, dst)
                     
@@ -41,7 +45,7 @@ class SiteChecker:
     @staticmethod
     def save_and_rotate(savedir, filetosave):
         """saves last 10 files under savedir, under a subfolder named by hash of url, named 1-10"""
-        maxsavefiles=10
+        maxsavefiles = 10
         
         try:
             os.remove(savedir + "\\" + str(maxsavefiles))
@@ -53,13 +57,13 @@ class SiteChecker:
                 SiteChecker.print_and_rename(savedir + "\\" + str(i), savedir + "\\" + str(i + 1))
             except OSError as err:
                 #we are expecting this exception, if fewer than 10 history files exist
-                logger.debug("OS error({0}): {1}".format(err.errno, err.strerror))
+                logger.debug("OS error {%s}: %s", err.errno, err.strerror)
     
         #save tmpfile
         SiteChecker.print_and_rename(savedir + "\\" +filetosave, savedir + "\\1")
         
     @staticmethod
-    def email_me():
+    def email_myself():
         """send email to myself from my hotmail address"""
         pass
     
@@ -67,8 +71,7 @@ class SiteChecker:
     def dl_and_cmp(url, savedir=None):
         """downloads file from url, and saves if newer version of page"""
         if savedir is None:
-            currentmodpath=os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-            savedir=currentmodpath+"\\hist"
+            savedir = modpath + "\\hist"
             
         savedir += "\\" + str(FileCmp.get_string_hash(url))
         logger.debug("savedir is: " + savedir)
@@ -78,16 +81,16 @@ class SiteChecker:
             try:
                 os.makedirs(savedir)
             except OSError as err:
-                logger.error("OS error({0}): {1}".format(err.errno, err.strerror))
+                logger.error("OS error {%s}: %s", err.errno, err.strerror)
             #save file under savedir with url name
             #just to make it easier for me to figure out what original url was
             try:
                 urlfilename = savedir + "\\url"
-                urlfile = open(savedir + "\\url", "w")
+                urlfile = open(urlfilename, "w")
                 urlfile.write(url)
                 urlfile.close()
             except IOError as err:
-                logger.error("IOError({0}): {1}".format(err.errno, err.strerror))
+                logger.error("IOError {%s}: %s", err.errno, err.strerror)
         
         #download file
         try:
@@ -105,7 +108,7 @@ class SiteChecker:
             savedir + "\\1"):
             logger.debug("File at url has changed.  Saving.")
             SiteChecker.save_and_rotate(savedir, SiteChecker.tmpfilename)
-            email_me()
+            SiteChecker.email_myself()
         #else clean up
         else:
             logger.debug("File has not changed.  Cleaning up.")
@@ -117,11 +120,13 @@ class SiteChecker:
         return
 
 def usage():
+    """print usage"""
     print('usage: --url url ')
     sys.exit(1)
     
 def main():
-
+    """script main method"""
+    
     #configloader tests
     args = sys.argv[1:]
 
