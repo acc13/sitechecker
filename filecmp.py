@@ -65,5 +65,5 @@ class FileCmp:
         """given two filenames, compares the contents of both files starting\
         with the match for re startpatt, and stopping with the match for re\
         endpatt"""
-        return True
+        raise 
         

@@ -2,6 +2,7 @@
 # Copyright 2014 Andrew Chang
 # Licensed under the Apache License, Version 2.0
 # http://www.apache.org/licenses/LICENSE-2.0
+
 """Downloads a url, compares against saved page history, emails admin if a change detected."""
 
 import sys
