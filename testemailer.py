@@ -6,15 +6,19 @@
 """Unit tests for filecmp.py"""
 
 import unittest
+import sys
 from emailer import SMTPEmailer
 
 
-class TestHashDiff(unittest.TestCase):
+class TestEmailer(unittest.TestCase):
     """Unit tests for filecmp.py"""
+    USERNAME = ""
+    PASSWORD = ""
     
     def setUp(self):
-        passwd = ""
-        self.emailer = SMTPEmailer("smtp.live.com", 587, "andrew_chang1@hotmail.com", passwd)
+        print(TestEmailer.USERNAME)
+        print(TestEmailer.PASSWORD[0:3])
+        self.emailer = SMTPEmailer("smtp.live.com", 587, TestEmailer.USERNAME, TestEmailer.PASSWORD)
         
     def tearDown(self):
         pass
@@ -25,12 +29,15 @@ class TestHashDiff(unittest.TestCase):
         msg1 = "testmsg1"
         sub2 = "testsub2"
         msg2 = "testmsg2"
-        self.emailer.send_email("andrew_chang1@hotmail.com", sub1, msg1)
-        self.emailer.send_email("andrew_chang1@hotmail.com", sub2, msg2)
-    
-        #read emails out other end
-        #sleep?
+        self.emailer.send_email(TestEmailer.USERNAME, sub1, msg1)
+        self.emailer.send_email(TestEmailer.USERNAME, sub2, msg2)
         
-if __name__ == '__main__':
-    unittest.main()
+        #sleep & read emails out other end?
+        
+        
+if __name__ == "__main__":
+    if len(sys.argv) > 1:
+        TestEmailer.PASSWORD = sys.argv.pop()
+        TestEmailer.USERNAME = sys.argv.pop()
+        unittest.main()
     

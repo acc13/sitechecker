@@ -12,11 +12,11 @@ class FileCmp:
     """Utility methods for comparing files."""
     
     @staticmethod
-    def get_string_hash(strtohash):
+    def get_string_md5hash(strtohash):
         """returns md5 has of string foo"""
         md5 = hashlib.md5()
         md5.update(strtohash.encode('utf-8'))
-        return md5.hexdigest()
+        return str(md5.hexdigest())
 
     
     @staticmethod
