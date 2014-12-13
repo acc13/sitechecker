@@ -8,13 +8,14 @@
 import unittest
 from filecmp import FileCmp
 import os
+import inspect
 
 class TestHashDiff(unittest.TestCase):
     """Unit tests for FileCmp"""
-    
-    file1name = "file1.test"
-    file1copyname = "file1copy.test"
-    notsamefilename = "notsame.test"
+    modpath = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+    file1name = modpath + "/file1.test"
+    file1copyname = modpath + "/file1copy.test"
+    notsamefilename = modpath + "/notsame.test"
     
     @classmethod
     def setUpClass(cls):

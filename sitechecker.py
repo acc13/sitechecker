@@ -23,7 +23,7 @@ logger = logging.getLogger('sitechecker') # pylint: disable=C0103
 logger.setLevel(logging.INFO)
 # create file handler which logs even info messages
 modpath = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe()))) # pylint: disable=C0103
-fh = logging.FileHandler(modpath + '\\sitechecker.log') # pylint: disable=C0103
+fh = logging.FileHandler(modpath + '/sitechecker.log') # pylint: disable=C0103
 fh.setLevel(logging.INFO)
 # create console handler with a higher log level
 ch = logging.StreamHandler() # pylint: disable=C0103
@@ -53,20 +53,20 @@ class SiteChecker:
         maxsavefiles = 10
         
         try:
-            os.remove(savedir + "\\" + str(maxsavefiles))
+            os.remove(savedir + "/" + str(maxsavefiles))
         except OSError:
             #not a problem
             pass
             
         for i in reversed(range(1, maxsavefiles)):
             try:
-                SiteChecker.print_and_rename(savedir + "\\" + str(i), savedir + "\\" + str(i + 1))
+                SiteChecker.print_and_rename(savedir + "/" + str(i), savedir + "/" + str(i + 1))
             except OSError as err:
                 #we are expecting this exception, if fewer than 10 history files exist
                 logger.debug("OS error {%s}: %s", err.errno, err.strerror)
     
         #save tmpfile
-        SiteChecker.print_and_rename(savedir + "\\" +filetosave, savedir + "\\1")
+        SiteChecker.print_and_rename(savedir + "/" +filetosave, savedir + "/1")
         
     @staticmethod
     def email_myself(email, password, sub, msg):
@@ -90,7 +90,7 @@ class SiteChecker:
     def save_urls_file(path, url, hashstring):
         """saves human readable dict of url->hashtring mappings under dir path"""
         
-        dictfilename = path + '\\urls' 
+        dictfilename = path + '/urls' 
         #load dict
         try:
             with open(dictfilename, 'r') as urlsfp:
@@ -122,9 +122,9 @@ class SiteChecker:
     @staticmethod
     def dl_and_cmp(url, email, password, noemail=False):
         """downloads file from url, and saves if newer version of page"""
-        histpath = modpath + "\\hist"
+        histpath = modpath + "/hist"
         urlhashstring = FileCmp.get_string_md5hash(url)
-        urlsavepath = histpath + "\\" + urlhashstring
+        urlsavepath = histpath + "/" + urlhashstring
         logger.debug("urlsavepath is: " + urlsavepath)
             
         #create working directories if necessary
@@ -143,7 +143,7 @@ class SiteChecker:
         
         #download url
         try:
-            request.urlretrieve(url, urlsavepath + "\\" + SiteChecker.tmpfilename)
+            request.urlretrieve(url, urlsavepath + "/" + SiteChecker.tmpfilename)
         except IOError as err:
             tracestring = traceback.format_exc()
             SiteChecker.log_and_email_errmsg(email, password, url, \
@@ -154,10 +154,10 @@ class SiteChecker:
 
         #if no local, or diff
         #save and rotate
-        if not os.path.exists(urlsavepath + "\\1") or \
-            not FileCmp.file_cmp_by_hash(urlsavepath + "\\" +SiteChecker.tmpfilename, \
-            urlsavepath + "\\1"):
-            logger.info("URL has changed.  Saving to history: " + urlsavepath + "\\1")
+        if not os.path.exists(urlsavepath + "/1") or \
+            not FileCmp.file_cmp_by_hash(urlsavepath + "/" +SiteChecker.tmpfilename, \
+            urlsavepath + "/1"):
+            logger.info("URL has changed.  Saving to history: " + urlsavepath + "/1")
             SiteChecker.save_and_rotate(urlsavepath, SiteChecker.tmpfilename)
             
             #send notification email
@@ -170,11 +170,11 @@ class SiteChecker:
         else:
             logger.info("File has not changed.  Cleaning up.")
             try:
-                os.remove(urlsavepath + "\\" + SiteChecker.tmpfilename)
+                os.remove(urlsavepath + "/" + SiteChecker.tmpfilename)
             except OSError as err:
                 tracestring = traceback.format_exc()
                 SiteChecker.log_and_email_errmsg(email, password, \
-                    "Failed to delete file: " + urlsavepath + "\\" + \
+                    "Failed to delete file: " + urlsavepath + "/" + \
                     SiteChecker.tmpfilename, errmsg, tracestring, noemail)
                 return
             
