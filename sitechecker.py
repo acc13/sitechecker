@@ -191,7 +191,7 @@ def main():
     #configloader tests
     args = sys.argv[1:]
 
-    if not args:
+    if not args or len(args) < 6:
         usage()
         
     if args[0] == '-url':
@@ -212,9 +212,11 @@ def main():
     else:
         usage()
         
-    if args[0] == '-noemail':
+    if 0 == len(args):
+        noemail = False
+    elif args[0] == '-noemail':
         noemail = True
-        del args[0:2]
+        del args[0:1]
     else:
         usage()
 
