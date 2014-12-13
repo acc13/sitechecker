@@ -7,6 +7,7 @@
 
 import hashlib
 import logging
+import codecs
 
 class FileCmp:
     """Utility methods for comparing files."""
@@ -32,7 +33,7 @@ class FileCmp:
         Raises:
             
         """
-        file = open(filename, "r", encoding='utf-8')
+        file = codecs.open(filename, "r", encoding='utf-8')
         md5 = hashlib.md5()
         while True:
             data = file.read(128).encode('utf-8')
