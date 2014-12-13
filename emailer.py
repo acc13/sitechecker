@@ -17,14 +17,14 @@ class SMTPEmailer:
         self.usr = usr
         self.passwd = passwd
    
-    def send_email(self, to_addr, sub, msg):
+    def send_email(self, to_addr, sub, body):
         """send email to to_addr, with subject sub and body msg"""
-        msg = email.message_from_string('warning')
+        msg = email.message_from_string("")
         msg['From'] = self.usr
         msg['To'] = to_addr
         msg['Subject'] = sub
-
-        #smtpconn = smtplib.SMTP("smtp.live.com", 587)
+        msg.set_payload(body)
+        
         smtpconn = smtplib.SMTP(self.servername, self.port)
         smtpconn.ehlo()
         smtpconn.starttls() 
@@ -36,4 +36,5 @@ class SMTPEmailer:
         smtpconn.quit()
         
         return True
+        
         

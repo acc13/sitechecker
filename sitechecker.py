@@ -138,9 +138,10 @@ class SiteChecker:
             SiteChecker.save_and_rotate(urlsavepath, SiteChecker.tmpfilename)
             
             #send notification email
-            sub = "Sitechecker.py: url changed: " + url 
+            sub = "Sitechecker: URL updated" 
             msg = "Link: " + url
             SiteChecker.email_myself(email, password, sub, msg)
+            logger.info("Email notification sent for url: " + url)
         #else clean up
         else:
             logger.info("File has not changed.  Cleaning up.")
@@ -183,6 +184,7 @@ def main():
     else:
         usage()
 
+    logger.info("")
     SiteChecker.dl_and_cmp(url, email, password)
     #static url (for testing)
     #SiteChecker.dl_and_cmp("http://www.crawfordnotchcamping.com/vacancies.php")

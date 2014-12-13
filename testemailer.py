@@ -16,9 +16,11 @@ class TestEmailer(unittest.TestCase):
     PASSWORD = ""
     
     def setUp(self):
-        print(TestEmailer.USERNAME)
-        print(TestEmailer.PASSWORD[0:3])
-        self.emailer = SMTPEmailer("smtp.live.com", 587, TestEmailer.USERNAME, TestEmailer.PASSWORD)
+        servername = "smtp.live.com"
+        port = 587
+        self.emailer = SMTPEmailer(servername, port, TestEmailer.USERNAME, TestEmailer.PASSWORD)
+        print("SMTPEmailer(" + servername + ", " + str(port) + ", " + \
+            TestEmailer.USERNAME + ", **********)")
         
     def tearDown(self):
         pass
@@ -26,11 +28,14 @@ class TestEmailer(unittest.TestCase):
     def test_send_two_emails(self):
         """send two emails using same SMTPEmailer instance"""
         sub1 = "testsub1"
-        msg1 = "testmsg1"
-        sub2 = "testsub2"
-        msg2 = "testmsg2"
+        msg1 = "testmsg1: testmsg1"
         self.emailer.send_email(TestEmailer.USERNAME, sub1, msg1)
-        self.emailer.send_email(TestEmailer.USERNAME, sub2, msg2)
+        print("self.emailer.send_email("  + ", " + \
+            TestEmailer.USERNAME + ", " + sub1 + ", " + msg1 + ")")
+            
+        #sub2 = "testsub2"
+        #msg2 = "testmsg2"
+        #self.emailer.send_email(TestEmailer.USERNAME, sub2, msg2)
         
         #sleep & read emails out other end?
         
