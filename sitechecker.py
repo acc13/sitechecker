@@ -11,6 +11,8 @@ import os
 import logging
 import inspect
 import json
+from time import strftime
+import traceback
 from emailer import SMTPEmailer
 
 from filecmp import FileCmp
@@ -41,7 +43,7 @@ class SiteChecker:
     @staticmethod
     def print_and_rename(src, dst):
         """print to output before renaming"""
-        logger.debug("renaming " + src + " to " + dst)
+        logger.debug("Renaming " + src + " to " + dst + ".")
         os.rename(src, dst)
                     
     
@@ -53,6 +55,7 @@ class SiteChecker:
         try:
             os.remove(savedir + "\\" + str(maxsavefiles))
         except OSError:
+            #not a problem
             pass
             
         for i in reversed(range(1, maxsavefiles)):
@@ -94,7 +97,7 @@ class SiteChecker:
                 url2md5dict = json.load(urlsfp)
         except (IOError, ValueError):
             #no dict file found
-            logger.info("no or empty dict file found: " + dictfilename)
+            logger.info("No or empty dict file found: " + dictfilename)
             url2md5dict = {} 
         
         #save if key:val doesn't already exist
@@ -102,19 +105,37 @@ class SiteChecker:
             url2md5dict[url] = hashstring
             with open(dictfilename, 'w') as urlsfp:
                 json.dump(url2md5dict, urlsfp)
-            
-
+    
     @staticmethod
-    def dl_and_cmp(url, email, password):
+    def log_and_email_errmsg(email, password, url, errmsg, tracestring, noemail):
+        sub = "Sitechecker: fatal error"
+        msg = "Fatal error occurred while checking url: " + url + "\n\n"
+        msg += errmsg + "\n\n"
+        msg += tracestring
+        if not noemail:
+            SiteChecker.email_myself(email, password, sub, msg)
+            logger.info("Error email sent")
+        
+        logger.info(sub)
+        logger.info(msg)
+        
+    @staticmethod
+    def dl_and_cmp(url, email, password, noemail=False):
         """downloads file from url, and saves if newer version of page"""
         histpath = modpath + "\\hist"
         urlhashstring = FileCmp.get_string_md5hash(url)
         urlsavepath = histpath + "\\" + urlhashstring
-        logger.info("urlsavepath is: " + urlsavepath)
+        logger.debug("urlsavepath is: " + urlsavepath)
             
         #create working directories if necessary
-        SiteChecker.create_dir_if_not_exist(histpath)
-        SiteChecker.create_dir_if_not_exist(urlsavepath)
+        try:
+            SiteChecker.create_dir_if_not_exist(histpath)
+            SiteChecker.create_dir_if_not_exist(urlsavepath)
+        except OSError as err:
+            tracestring = traceback.format_exc()
+            SiteChecker.log_and_email_errmsg(email, password, url, \
+                "Failed to create working directories", tracestring, noemail)
+            return
         
         #save url->subdir(hash of url) mapping
         #just to make it easier for me to figure out what original url was
@@ -123,8 +144,10 @@ class SiteChecker:
         #download url
         try:
             request.urlretrieve(url, urlsavepath + "\\" + SiteChecker.tmpfilename)
-        except IOError:
-            logger.error("Could not download file: " + url)
+        except IOError as err:
+            tracestring = traceback.format_exc()
+            SiteChecker.log_and_email_errmsg(email, password, url, \
+                "Failed to download file: " + url, tracestring, noemail)
             return
         
         logger.info("File downloaded: " + url)
@@ -134,27 +157,32 @@ class SiteChecker:
         if not os.path.exists(urlsavepath + "\\1") or \
             not FileCmp.file_cmp_by_hash(urlsavepath + "\\" +SiteChecker.tmpfilename, \
             urlsavepath + "\\1"):
-            logger.info("File at url has changed.  Saving.")
+            logger.info("URL has changed.  Saving to history: " + urlsavepath + "\\1")
             SiteChecker.save_and_rotate(urlsavepath, SiteChecker.tmpfilename)
             
             #send notification email
             sub = "Sitechecker: URL updated" 
             msg = "Link: " + url
-            SiteChecker.email_myself(email, password, sub, msg)
-            logger.info("Email notification sent for url: " + url)
+            if not noemail:
+                SiteChecker.email_myself(email, password, sub, msg)
+                logger.info("Email notification sent.")
         #else clean up
         else:
             logger.info("File has not changed.  Cleaning up.")
             try:
                 os.remove(urlsavepath + "\\" + SiteChecker.tmpfilename)
-            except OSError:
-                pass
+            except OSError as err:
+                tracestring = traceback.format_exc()
+                SiteChecker.log_and_email_errmsg(email, password, \
+                    "Failed to delete file: " + urlsavepath + "\\" + \
+                    SiteChecker.tmpfilename, errmsg, tracestring, noemail)
+                return
             
         return
 
 def usage():
     """print usage"""
-    print('usage: -url url -email email -password password')
+    print('usage: -url url -email email -password password [-noemail]')
     sys.exit(1)
     
 def main():
@@ -183,13 +211,23 @@ def main():
         del args[0:2]
     else:
         usage()
+        
+    if args[0] == '-noemail':
+        noemail = True
+        del args[0:2]
+    else:
+        usage()
 
-    logger.info("")
-    SiteChecker.dl_and_cmp(url, email, password)
-    #static url (for testing)
-    #SiteChecker.dl_and_cmp("http://www.crawfordnotchcamping.com/vacancies.php")
-    #changing url (for testing)
-    #SiteChecker.dl_and_cmp("http://stackoverflow.com/questions/2759067/rename-files-in-python")
+    logger.info(strftime("%Y-%m-%d %H:%M:%S"))
+    
+    if url == "earth":
+        #url changes infrequently
+        url = "http://www.crawfordnotchcamping.com/vacancies.php"
+    elif url == "wind":
+        #url changes frequently
+        url = "http://stackoverflow.com/questions/2759067/rename-files-in-python"
+    
+    SiteChecker.dl_and_cmp(url, email, password, noemail)
         
     sys.exit(0)    
         
