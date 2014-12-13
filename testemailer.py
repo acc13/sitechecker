@@ -27,13 +27,13 @@ class TestEmailer(unittest.TestCase):
         
     def test_send_two_emails(self):
         """send two emails using same SMTPEmailer instance"""
-        sub1 = "testsub1"
+        sub1 = "testemailer.py sub1"
         msg1 = "testmsg1: testmsg1"
         self.emailer.send_email(TestEmailer.USERNAME, sub1, msg1)
         print("self.emailer.send_email("  + ", " + \
             TestEmailer.USERNAME + ", " + sub1 + ", " + msg1 + ")")
             
-        #sub2 = "testsub2"
+        #sub2 = "testemailer.py sub2"
         #msg2 = "testmsg2"
         #self.emailer.send_email(TestEmailer.USERNAME, sub2, msg2)
         
