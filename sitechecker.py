@@ -9,6 +9,7 @@ import sys
 from urllib import request
 import os
 import logging
+import logging.handlers
 import inspect
 import json
 from time import strftime
@@ -23,7 +24,8 @@ logger = logging.getLogger('sitechecker') # pylint: disable=C0103
 logger.setLevel(logging.INFO)
 # create file handler which logs even info messages
 modpath = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe()))) # pylint: disable=C0103
-fh = logging.FileHandler(modpath + '/sitechecker.log') # pylint: disable=C0103
+fh = logging.handlers.RotatingFileHandler(modpath + '/sitechecker.log', \
+    maxBytes=30000, backupCount=5)# pylint: disable=C0103
 fh.setLevel(logging.INFO)
 # create console handler with a higher log level
 ch = logging.StreamHandler() # pylint: disable=C0103
